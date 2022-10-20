@@ -6,6 +6,7 @@ width_beam = 16; % in mm
 Young_modulus_1 = 100e9; % in Pa
 Young_modulus_2 = 50e9; % in Pa
 Young_modulus_3 = 25e9; % in Pa
+poisson_ratio = 0.3;
 
 F = 500; % in N, force at end of beam
 
@@ -40,8 +41,18 @@ end
 
 stiffness_matrices = cell(size(nodal_coords,1) - 2, size(nodal_coords,2) - 2);
 for r=1:size(nodal_coords,1) - 2
-    for c=1:size(nodal_coords,2) - 2
-        stiffness_matrices{r,c} = make_stiffness_matrix(element_coords{r,c});
+    if r >= 1 && r <= 5
+        young_modulus = Young_modulus_1;
+    elseif r >= 6 && r <= 9
+        young_modulus = Young_modulus_2;
+    elseif r >= 10
+        young_modulus = Young_modulus_3;
     end
-
+    
+    for c=1:size(nodal_coords,2) - 2
+        stiffness_matrices{r,c} = make_stiffness_matrix(element_coords{r,c}, young_modulus, poisson_ratio);
+    end
 end
+
+
+

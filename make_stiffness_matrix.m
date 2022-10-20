@@ -1,4 +1,4 @@
-function stiffness_matrix = make_stiffness_matrix(element_global_coords)
+function stiffness_matrix = make_stiffness_matrix(element_global_coords, young_modulus, poisson_ratio)
     % calculates stiffness matrix for all 4 gauss points and returns their
     % sum k = Ka + kb + Kc + Kd
     % input: element_global_coords  8 x 1 cell, each cell is a coordinate in global system
@@ -9,7 +9,7 @@ function stiffness_matrix = make_stiffness_matrix(element_global_coords)
     gauss_pts_jacob_matrix = cell(4,1);
     gauss_pts_a_matrix = cell(4,1);
     gauss_pts_b_matrix = cell(4,1);
-
+    
     % element global coords
     x = zeros(8,1); y = zeros(8,1);
     for i=1:8
@@ -77,9 +77,19 @@ function stiffness_matrix = make_stiffness_matrix(element_global_coords)
         gauss_pts_b_matrix{g,1} = b_matrix;
 
         % D matrix 
-        % matrix ????
+        d_matrix = (young_modulus/(1 - poisson_ratio^2))* [...
+            [1 poisson_ratio 0];...
+            [poisson_ratio 1 0];...
+            [0 0 (1-poisson_ratio)/2]
+        ];
         
         % K matrix
         % B.' D B
+        k_matrix = transpose(b_matrix)*d_matrix*b_matrix;
+        gauss_pts_stiffness_matrix{g,1} = k_matrix;
+
     end % end of for each gauss pt
+
+    stiffness_matrix = gauss_pts_stiffness_matrix{1,1} + gauss_pts_stiffness_matrix{2,1} + ...
+                    gauss_pts_stiffness_matrix{3,1} + gauss_pts_stiffness_matrix{4,1};
 end
