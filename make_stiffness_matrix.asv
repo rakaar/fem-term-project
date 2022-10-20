@@ -1,0 +1,54 @@
+function stiffness_matrix = make_stiffness_matrix(element_global_coords)
+    % calculates stiffness matrix for all 4 gauss points and returns their
+    % sum k = Ka + kb + Kc + Kd
+    % input: element_global_coords  8 x 1 cell, each cell is a coordinate in global system
+
+    gauss_pts = [[-1 -1]; [1 -1]; [1 1]; [-1 1]]/(3^0.5);
+    gauss_pts_stiffness_matrix = cell(4,1); % Ka,Kb,Kc,Kd
+    gauss_pts_g_matrix = cell(4,1); % Ga, Gb, Gc, Gd
+
+    % element global coords
+    x = zeros(8,1); y = zeros(8,1);
+    for i=1:8
+        x(i) = element_global_coords{i}(1);
+        y(i) = element_global_coords{i}(2);
+    end
+    
+    for g=1:length(gauss_pts)
+        xi = gauss_pts(g,1);
+        eta = gauss_pts(g,2);
+        
+        % xi derivatives
+        s1 = 0.25*(1 - eta)*(2*xi + eta);
+        s2 = 0.25*(1 - eta)*(2*xi - eta);
+        s3 = 0.25*(1 + eta)*(2*xi + eta);
+        s4 = 0.25*(1 + eta)*(2*xi - eta);
+        s5 = -xi*(1-eta);
+        s6 = 0.5*(1-(eta^2));
+        s7 = -xi*(1 + eta);
+        s8 = -0.5*(1 - (eta^2));
+
+        % eta derivatives
+        t1 = 0.25*(1 - xi)*(2*eta + xi);
+        t2 = 0.25*(1 + xi)*(xi - 2*eta);
+        t3 = 0.25*(1 + xi)*(2*eta + xi);
+        t4 = 0.25*(1 - xi)*(2*eta - xi);
+        t5 = -0.5*(1 - (xi^2));
+        t6 = -eta*(1 + xi);
+        t7 = 0.5*(1 - (xi^2));
+        t8 = -eta*(1 - xi);
+
+        % g matrix
+        g_matrix = [ ...
+        [s1 0 s2 0 s3 0 s4 0 s5 0 s6 0 s7 0 s8 0];...
+        [t1 0 t2 0 t3 0 t4 0 t5 0 t6 0 t7 0 t8 0];...
+        [0 s1 0 s2 0 s3 0 s4 0 s5 0 s6 0 s7 0 s8]; ...
+        [0 t1 0 t2 0 t3 0 t4 0 t5 0 t6 0 t7 0 t8];...
+        ];
+
+        gauss_pts_g_matrix{g,1} = g_matrix; 
+
+        % jacobian matrix elements
+        J11 = 
+    end % end of for each gauss pt
+end
