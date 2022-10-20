@@ -30,26 +30,26 @@ for i=1:size(X,1)
     end
 end
 
-element_coords = cell(size(nodal_coords,1) - 2, size(nodal_coords,2) - 2);
-for r=1:size(nodal_coords,1) - 2
-    for c=1:size(nodal_coords,2) - 2
-        element_coords{r,c} = [nodal_coords(r+2,c); nodal_coords(r+2,c+2); nodal_coords(r,c+2); nodal_coords(r,c); nodal_coords(r+2,c+1); nodal_coords(r+1,c+2); nodal_coords(r,c+1); nodal_coords(r+1,c)];
+element_coords = cell((size(nodal_coords,1) -1)/2, (size(nodal_coords,2) - 1)/2);
+for r=1:2:size(nodal_coords,1) - 2
+    for c=1:2:size(nodal_coords,2) - 2
+        element_coords{(r-1)/2 + 1,(c-1)/2 + 1} = [nodal_coords(r+2,c); nodal_coords(r+2,c+2); nodal_coords(r,c+2); nodal_coords(r,c); nodal_coords(r+2,c+1); nodal_coords(r+1,c+2); nodal_coords(r,c+1); nodal_coords(r+1,c)];
     end
 end
 
 
 
-stiffness_matrices = cell(size(nodal_coords,1) - 2, size(nodal_coords,2) - 2);
-for r=1:size(nodal_coords,1) - 2
-    if r >= 1 && r <= 5
+stiffness_matrices = cell(size(element_coords,1), size(element_coords,2));
+for r=1:size(element_coords,1)
+    if r >= 1 && r <= 2
         young_modulus = Young_modulus_1;
-    elseif r >= 6 && r <= 9
+    elseif r >= 3 && r <= 4
         young_modulus = Young_modulus_2;
-    elseif r >= 10
+    elseif r >= 5
         young_modulus = Young_modulus_3;
     end
     
-    for c=1:size(nodal_coords,2) - 2
+    for c=1:size(element_coords,2)
         stiffness_matrices{r,c} = make_stiffness_matrix(element_coords{r,c}, young_modulus, poisson_ratio);
     end
 end

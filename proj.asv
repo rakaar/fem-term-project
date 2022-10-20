@@ -6,6 +6,7 @@ width_beam = 16; % in mm
 Young_modulus_1 = 100e9; % in Pa
 Young_modulus_2 = 50e9; % in Pa
 Young_modulus_3 = 25e9; % in Pa
+poisson_ratio = 0.3;
 
 F = 500; % in N, force at end of beam
 
@@ -29,14 +30,29 @@ for i=1:size(X,1)
     end
 end
 
-element_coords = cell(size(nodal_coords,1) - 2, size(nodal_coords,2) - 2);
-for r=1:size(nodal_coords,1) - 2
-    for c=1:size(nodal_coords,2) - 2
-        element_coords{r,c} = [nodal_coords(r+2,c); nodal_coords(r+2,c+2); nodal_coords(r,c+2); nodal_coords(r,c); nodal_coords(r+2,c+1); nodal_coords(r+1,c+2); nodal_coords(r,c+1); nodal_coords(r+1,c)];
+element_coords = cell((size(nodal_coords,1) -1)/2, (size(nodal_coords,2) - 1)/2);
+for r=1:2:size(nodal_coords,1) - 2
+    for c=1:2:size(nodal_coords,2) - 2
+        element_coords{(r-1)/2 + 1,(c-1)/2 + 1} = [nodal_coords(r+2,c); nodal_coords(r+2,c+2); nodal_coords(r,c+2); nodal_coords(r,c); nodal_coords(r+2,c+1); nodal_coords(r+1,c+2); nodal_coords(r,c+1); nodal_coords(r+1,c)];
     end
 end
 
-gauss_pts = [[-1 -1]; [1 -1]; [1 1]; [-1 1]]/(3^0.5);
 
-stiffness_matrices = cell(size(nodal_coords,1) - 2, size(nodal_coords,2) - 2);
-for 2
+
+stiffness_matrices = cell(size(element_coords,1), size(element_coords,2));
+for r=1:size(element_coords,1)
+    if r >= 1 && r <= 5
+        young_modulus = Young_modulus_1;
+    elseif r >= 6 && r <= 9
+        young_modulus = Young_modulus_2;
+    elseif r >= 10
+        young_modulus = Young_modulus_3;
+    end
+    
+    for c=1:size(element_ver,2)
+        stiffness_matrices{r,c} = make_stiffness_matrix(element_coords{r,c}, young_modulus, poisson_ratio);
+    end
+end
+
+
+
