@@ -70,7 +70,3 @@ function stress_vecs = calc_stress_at_nodes(d_matrix,displacement_vec,global_ele
 
 end
 
-%% printing displacement of element, stress at gauss points, stress at nodes
-
-
-%% plotting

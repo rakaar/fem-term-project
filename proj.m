@@ -64,9 +64,13 @@ for r=1:size(element_coords,1)
 end
 
 % except element at the right corner
-force_vecs{1,size(force_vecs,2)}(6,1) = -F/3; % force applied - 3rd node, 2nd dof
-force_vecs{1,size(force_vecs,2)}(8,1) = -F/3; % force applied - 3rd node, 2nd dof
-force_vecs{1,size(force_vecs,2)}(14,1) = -F/3; % force applied - 3rd node, 2nd dof
+for f=1:size(force_vecs,2)
+    nodal_f = -(1/3)* (500/11)*(f-1);
+    force_vecs{1,f}(6,1) = nodal_f; % force applied - 3rd node, 2nd dof
+    force_vecs{1,f}(8,1) = nodal_f; % force applied - 3rd node, 2nd dof
+    force_vecs{1,f}(14,1) = nodal_f; % force applied - 3rd node, 2nd dof
+end
+
 %% displacement F = KQ
 displacement_vecs = cell(size(element_coords,1), size(element_coords,2)); % each is 16x1 - [u1 v1 u2 v2 ... u8 v8]
 for r=1:size(element_coords,1)
@@ -126,4 +130,77 @@ for r=1:size(element_coords,1)
             stress_vec_nodes{r,c} = calc_stress_at_nodes(d_matrix,displacement_vecs{r,c}, element_coords{r,c});
     end
 end
+
+%% printing displacement of element
+diary 'displacement.txt'
+disp('non-zero displacement values - ux, uy of each node')
+for i=2:size(displacement_vecs,2)
+    fprintf("\n In top of the bar, elemenent num %d \n",i);
+    disp(reshape(displacement_vecs{1,i}, 1,16));
+end
+diary off
+
+%% printing stress at gauss pts
+diary 'gauss_stress.txt'
+disp('non-zero stress at gauss points - sigma x, sigma y, tau xy')
+for i=2:size(displacement_vecs,2)
+    fprintf("\n In top of the bar, elemenent num %d \n",i);
+    for j=1:4
+        disp(gauss_pts_stress_vecs{1,i}{j});
+    end
+end
+diary off
+
+%% printing stress at nodes
+
+diary 'nodal_stress.txt'
+disp('non-zero stress at nodes - sigma x, sigma y, tau xy')
+for i=2:size(displacement_vecs,2)
+    fprintf("\n In top of the bar, elemenent num %d \n",i);
+    for j=1:8
+        disp(stress_vec_nodes{1,i}{j});
+    end
+end
+diary off
+
+
+%% plotting ux and uy of all middle node on top side
+ux = zeros(12,1);
+uy = zeros(12,1);
+for i=1:12
+    ux(i) = displacement_vecs{1,i}(13);
+    uy(i) = displacement_vecs{1,i}(14);
+end
+
+figure
+    hold on
+    plot(ux)
+    plot(uy, '--')
+    hold off
+    title('Ux and Uy of an example node')
+    legend('Ux','Uy')
+grid
+%% plotting average sigma - x, sigma  y, tau - xy of all elements
+sigma_x = zeros(12,1);
+sigma_y = zeros(12,1);
+tau_xy = zeros(12,1);
+
+for i=1:12
+    for j=1:8
+        sigma_x(i) = sigma_x(i) + stress_vec_nodes{1,i}{j}(1)/8;
+        sigma_y(i) = sigma_y(i) + stress_vec_nodes{1,i}{j}(2)/8;
+        tau_xy(i) = tau_xy(i) + stress_vec_nodes{1,i}{j}(3)/8;
+    end
+    
+end
+
+figure
+    hold on
+    plot(sigma_x)
+    plot(sigma_y, '--')
+    plot(tau_xy, '-o')
+    hold off
+    title('Average stress in each element - sigma x, sigma y and tau xy')
+    legend('sigma x','sigma y', 'tau xy')
+grid
 
