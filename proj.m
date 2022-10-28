@@ -64,7 +64,9 @@ for r=1:size(element_coords,1)
 end
 
 % except element at the right corner
-force_vecs{1,size(force_vecs,2)}(6,1) = F; % force applied - 3rd node, 2nd dof
+force_vecs{1,size(force_vecs,2)}(6,1) = -F/3; % force applied - 3rd node, 2nd dof
+force_vecs{1,size(force_vecs,2)}(8,1) = -F/3; % force applied - 3rd node, 2nd dof
+force_vecs{1,size(force_vecs,2)}(14,1) = -F/3; % force applied - 3rd node, 2nd dof
 %% displacement F = KQ
 displacement_vecs = cell(size(element_coords,1), size(element_coords,2)); % each is 16x1 - [u1 v1 u2 v2 ... u8 v8]
 for r=1:size(element_coords,1)
@@ -100,6 +102,28 @@ for r=1:size(element_coords,1)
 
           gauss_pts_stress_vecs{r,c} = stress_cell;
           
+    end
+end
+
+%% calculate stress at nodes
+stress_vec_nodes = cell(size(element_coords,1), size(element_coords,2));
+for r=1:size(element_coords,1)
+    for c=1:size(element_coords,2)
+        if r >= 1 && r <= 2
+                young_modulus = Young_modulus_1;
+            elseif r >= 3 && r <= 4
+                young_modulus = Young_modulus_2;
+            elseif r >= 5
+                young_modulus = Young_modulus_3;
+             end
+
+       d_matrix = (young_modulus/(1 - poisson_ratio^2))* [...
+            [1 poisson_ratio 0];...
+            [poisson_ratio 1 0];...
+            [0 0 (1-poisson_ratio)/2]
+        ];
+  
+            stress_vec_nodes{r,c} = calc_stress_at_nodes(d_matrix,displacement_vecs{r,c}, element_coords{r,c});
     end
 end
 
