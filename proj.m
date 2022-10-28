@@ -40,6 +40,7 @@ end
 
 
 stiffness_matrices = cell(size(element_coords,1), size(element_coords,2));
+gauss_pts_b_matrices = cell(size(element_coords,1), size(element_coords,2));
 for r=1:size(element_coords,1)
     if r >= 1 && r <= 2
         young_modulus = Young_modulus_1;
@@ -50,7 +51,7 @@ for r=1:size(element_coords,1)
     end
     
     for c=1:size(element_coords,2)
-        stiffness_matrices{r,c} = make_stiffness_matrix(element_coords{r,c}, young_modulus, poisson_ratio);
+[stiffness_matrices{r,c},gauss_pts_b_matrices{r,c}] = make_stiffness_matrix(element_coords{r,c}, young_modulus, poisson_ratio);
     end
 end
 
@@ -74,5 +75,31 @@ for r=1:size(element_coords,1)
     end
 end
 
-%% calculate stress
+%% calculate stress at gauss pts
+gauss_pts_stress_vecs = cell(size(element_coords,1), size(element_coords,2));
+
+for r=1:size(element_coords,1)
+    for c=1:size(element_coords,2)
+             if r >= 1 && r <= 2
+                young_modulus = Young_modulus_1;
+            elseif r >= 3 && r <= 4
+                young_modulus = Young_modulus_2;
+            elseif r >= 5
+                young_modulus = Young_modulus_3;
+             end
+
+       d_matrix = (young_modulus/(1 - poisson_ratio^2))* [...
+            [1 poisson_ratio 0];...
+            [poisson_ratio 1 0];...
+            [0 0 (1-poisson_ratio)/2]
+        ];
+          stress_cell = cell(4,1);
+          for g=1:4
+              stress_cell{g,1} = d_matrix*gauss_pts_b_matrices{r,c}{g}*displacement_vecs{r,c};
+          end
+
+          gauss_pts_stress_vecs{r,c} = stress_cell;
+          
+    end
+end
 

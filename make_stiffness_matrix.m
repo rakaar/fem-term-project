@@ -1,4 +1,4 @@
-function stiffness_matrix = make_stiffness_matrix(element_global_coords, young_modulus, poisson_ratio)
+function [stiffness_matrix, gauss_pts_b_matrix] = make_stiffness_matrix(element_global_coords, young_modulus, poisson_ratio)
     % calculates stiffness matrix for all 4 gauss points and returns their
     % sum k = Ka + kb + Kc + Kd
     % input: element_global_coords  8 x 1 cell, each cell is a coordinate in global system
